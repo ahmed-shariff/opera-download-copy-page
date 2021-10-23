@@ -27,29 +27,7 @@ function copyString(str) {
     textArea.remove();
 }
 
-// The renaming url function
-function renameURLToInstitute(){
-    chrome.tabs.query({
-	currentWindow: true,
-	active: true
-    }, function(tab) {
-        var splitURL = tab[0].url.split("/");
-        splitURL.forEach(function(val, i){
-	    if (val.endsWith(".org") || val.endsWith(".com")) {
-    	        val = val.replace(".", "-") + ".uml.idm.oclc.org";
-            }
-            splitStr[i] = val;
-        });
-        url = splitURL.join("/");
-        
-        updateProperties = new Object();
-        updateProperties.url = url;
-        chrome.tabs.update(tab[0], updateProperties);
-    });
-}
-
 chrome.browserAction.onClicked.addListener(downloadCopy);
-chrome.browserAction.onClicked.addListener(renameURLToInstitute);
 
 // This allows any pdf file downloaded to be copied out
 chrome.downloads.onChanged.addListener(function (e) {
@@ -59,8 +37,6 @@ chrome.downloads.onChanged.addListener(function (e) {
             copyString(e.filename.current);
         }
     }
-    console.log("An event happened for downloads.onChanged");
-    console.log(e);
 });
 
 chrome.commands.onCommand.addListener(function(command) {
