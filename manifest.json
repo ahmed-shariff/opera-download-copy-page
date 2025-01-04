@@ -1,31 +1,31 @@
 {
-    "manifest_version": 2,
+  "manifest_version": 3,
 
-    "developer" : {
-	"name" : "Ahmed Shariff",
-	"url" : "https://github.com/ahmed-shariff"
-    },
-    
-    "name": "download copy path",
-    "description": "Download file and copy saved file name",
-    "version": "1.1",
-    "background": {
-	"scripts": ["background.js"]
-    },
+  "developer" : {
+	  "name" : "Shariff Faleel",
+	  "url" : "https://shariff-faleel.com"
+  },
+  
+  "name": "download copy path",
+  "description": "Download file and copy saved file name",
+  "version": "1.1",
+  "background": {
+	  "service_worker": "background.js"
+  },
 
-    "permissions": ["tabs", "activeTab", "downloads", "contentSettings", "<all_urls>"],
-    "browser_action": {
-	"default_icon": "icon.png",
-	"default_title": "download copy path"
-    },
+  "permissions": ["tabs", "activeTab", "downloads", "contentSettings", "scripting"],
+  "action": {
+	   "default_icon": "icon.png",
+	   "default_title": "download copy path"
+  },
 
-    "commands": {
-	"download-copy": {
+  "commands": {
+	  "download-copy": {
 	    "suggested_key": {
-		"default": "Ctrl+Shift+D",
-		"mac": "Command+Shift+D"
+		    "default": "Ctrl+Shift+D",
+		    "mac": "Command+Shift+D"
 	    },
 	    "description": "Copy downloaded pdf file name"
-	}
-    }
+	  }
+  }
 }
