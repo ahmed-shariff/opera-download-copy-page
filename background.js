@@ -70,6 +70,11 @@ function downloadCopy(tab) {
             }
         })
     }
+    else if (downloadUrl.includes("link.springer.com")) {
+        doi = downloadUrl.match(doiRegex)[0];
+        downloadUrl = downloadUrl.replace("article", "content/pdf") + ".pdf";
+        downloadFile(tab);
+    }
     else {
         downloadFile(tab);
     }
