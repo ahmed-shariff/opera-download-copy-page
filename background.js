@@ -21,6 +21,12 @@ function getIEEEDownloadUrl() {
     }
 }
 
+function getMDPIDownloadUrlAndDOI() {
+    var doiUrl = document.querySelector(".bib-identity > a").href;
+    var downloadUrl = document.querySelector(".UD_ArticlePDF").href;
+    return { doiUrl: doiUrl, downloadUrl: downloadUrl };
+}
+
 function downloadFile(tab) {
     chrome.scripting.executeScript({
         target: { tabId: tab.id },
@@ -73,6 +79,22 @@ function downloadCopy(tab) {
     else if (downloadUrl.includes("link.springer.com")) {
         doi = downloadUrl.match(doiRegex)[0];
         downloadUrl = downloadUrl.replace("article", "content/pdf") + ".pdf";
+        downloadFile(tab);
+    }
+    else if (downloadUrl.includes("mdpi.com")) {
+        chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            func: getMDPIDownloadUrlAndDOI,
+        }).then((results) => {
+            downloadUrl = results[0].result.downloadUrl;
+            doi = results[0].result.doiUrl.match(doiRegex)[0];
+            downloadFile(tab);
+        });
+    }
+    else if (downloadUrl.includes("tandfonline.com/doi")) {
+        doi = downloadUrl.match(doiRegex)[0];
+        downloadUrl = downloadUrl.replace("epdf", "pdf") + "?download=true";
+        console.log(doi, downloadUrl);
         downloadFile(tab);
     }
     else {
