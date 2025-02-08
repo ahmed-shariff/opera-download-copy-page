@@ -4,6 +4,7 @@ var downloadUrl = null;
 var fileName = null;
 var doi = null;
 var selectedText = null;
+var forceSendOrg = false;
 // From https://www.crossref.org/blog/dois-and-matching-regular-expressions/
 var doiRegex = /10.\d{4,9}\/[-._;()\/:A-Z0-9]+/i;
 
@@ -25,6 +26,17 @@ function getMDPIDownloadUrlAndDOI() {
     var doiUrl = document.querySelector(".bib-identity > a").href;
     var downloadUrl = document.querySelector(".UD_ArticlePDF").href;
     return { doiUrl: doiUrl, downloadUrl: downloadUrl };
+}
+
+async function getElsiverDownloadUrlAndDOI() {
+    const doiUrl = document.querySelector("#article-identifier-links > .doi").href;
+    const pdfLinkElement = document.querySelector(".ViewPDF > a");
+
+    let downloadUrl = pdfLinkElement.href;
+
+    window.open(downloadUrl, '_blank');
+
+    return { doiUrl: doiUrl, downloadUrl: downloadUrl, forceSendOrg: true };
 }
 
 function downloadFile(tab) {
@@ -91,6 +103,18 @@ function downloadCopy(tab) {
             downloadFile(tab);
         });
     }
+    else if (downloadUrl.includes("sciencedirect.com")) {
+        chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            func: getElsiverDownloadUrlAndDOI,
+        }).then((results) => {
+            console.log(results[0]);
+            downloadUrl = results[0].result.downloadUrl;
+            doi = results[0].result.doiUrl.match(doiRegex)[0];
+            forceSendOrg = results[0].result.forceSendOrg;
+            downloadFile(tab);
+        });
+    }
     else if (downloadUrl.includes("tandfonline.com/doi")) {
         doi = downloadUrl.match(doiRegex)[0];
         downloadUrl = downloadUrl.replace("epdf", "pdf") + "?download=true";
@@ -134,8 +158,10 @@ chrome.downloads.onChanged.addListener(function (e) {
         }
     }
 
-    if (fileName != null && "state" in e && e.state.current === 'complete') {
-        const orgProtocolHref = `org-protocol:///add-doi-pdf?url=${downloadUrl}&filename=${fileName}&doi=${doi}&selectedText=${selectedText}`;
+    if ((fileName != null || forceSendOrg) && "state" in e && e.state.current === 'complete') {
+        let orgProtocolHref = `org-protocol:///add-doi-pdf?url=${downloadUrl}&doi=${doi}&selectedText=${selectedText}`;
+        if (fileName != null)
+            orgProtocolHref = orgProtocolHref + `&filename=${fileName}`;
         console.log(`Opening: ${orgProtocolHref}`);
         /* window.open(orgProtocolHref); */
         chrome.tabs.create({ url: orgProtocolHref });
@@ -143,7 +169,9 @@ chrome.downloads.onChanged.addListener(function (e) {
         downloadUrl = null;
         fileName = null;
         doi = null;
+        forceSendOrg = false;
     }
+
 });
 
 chrome.commands.onCommand.addListener(function(command) {
